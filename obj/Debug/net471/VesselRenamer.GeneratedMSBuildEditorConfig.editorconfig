@@ -1,0 +1,5 @@
+is_global = true
+build_property.RootNamespace = AutoNameIncrementer
+build_property.ProjectDir = F:\_Projects\KSP-Mod\LaunchVesselRenamer\VesselRenamer\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 

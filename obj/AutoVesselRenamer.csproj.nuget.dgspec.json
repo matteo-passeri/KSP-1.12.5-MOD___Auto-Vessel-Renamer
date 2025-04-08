@@ -1,0 +1,58 @@
+{
+  "format": 1,
+  "restore": {
+    "F:\\_Projects\\KSP-Mod\\LaunchVesselRenamer\\AutoVesselRenamer\\AutoVesselRenamer.csproj": {}
+  },
+  "projects": {
+    "F:\\_Projects\\KSP-Mod\\LaunchVesselRenamer\\AutoVesselRenamer\\AutoVesselRenamer.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "F:\\_Projects\\KSP-Mod\\LaunchVesselRenamer\\AutoVesselRenamer\\AutoVesselRenamer.csproj",
+        "projectName": "AutoVesselRenamer",
+        "projectPath": "F:\\_Projects\\KSP-Mod\\LaunchVesselRenamer\\AutoVesselRenamer\\AutoVesselRenamer.csproj",
+        "packagesPath": "C:\\Users\\capob\\.nuget\\packages\\",
+        "outputPath": "F:\\_Projects\\KSP-Mod\\LaunchVesselRenamer\\AutoVesselRenamer\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\capob\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net471"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net471": {
+            "targetAlias": "net471",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        }
+      },
+      "frameworks": {
+        "net471": {
+          "targetAlias": "net471",
+          "dependencies": {
+            "Microsoft.NETFramework.ReferenceAssemblies": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[1.0.3, )",
+              "autoReferenced": true
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.202\\RuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}
