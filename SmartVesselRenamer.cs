@@ -165,13 +165,24 @@ public class SmartVesselRenamer : MonoBehaviour
 
         GUI.BeginGroup(new Rect(10, 20, widthButton + (groupPadding * 2), windowRect.height - 40));
 
-        config.AutoRenameEnabled = GUI.Toggle(new Rect(10, 10, widthButton, heightButton), config.AutoRenameEnabled, "Enable Auto-Rename");
+        bool autoRenameToggle = GUI.Toggle(new Rect(10, 10, widthButton, heightButton), config.AutoRenameEnabled, "Enable Auto-Rename");
+        if (autoRenameToggle != config.AutoRenameEnabled)
+        {
+            config.AutoRenameEnabled = autoRenameToggle;
+            config.Save();
+        }
 
         GUI.Label(new Rect(10, 40, widthButton, heightButton), "Suffix Format:");
 
         GUIContent suffixLabel = new GUIContent("Suffix Format", "Use {n} as a placeholder for the number (e.g. {n}, 0x{n:X2}, etc.)");
         GUILayout.Label(suffixLabel);
         config.SuffixFormat = GUI.TextField(new Rect(10, 60, widthButton, heightField), config.SuffixFormat);
+        string suffixFormat = GUI.TextField(new Rect(10, 60, widthButton, heightField), config.SuffixFormat);
+        if (suffixFormat != config.SuffixFormat)
+        {
+            config.SuffixFormat = suffixFormat;
+            config.Save();
+        }
 
 
         if (!config.SuffixFormat.Contains("{n}"))
@@ -216,9 +227,12 @@ public class SmartVesselRenamer : MonoBehaviour
             return;
         }
 
-        config.RenameFirstVessel = GUI.Toggle(new Rect(10, 160, widthButton, heightButton),
-                                        config.RenameFirstVessel,
-                                        "Rename first vessel (include #1)");
+        bool newRenameFirst = GUI.Toggle(new Rect(10, 160, widthButton, heightButton), config.RenameFirstVessel, "Rename first vessel (include #1)");
+            if (newRenameFirst != config.RenameFirstVessel)
+            {
+                config.RenameFirstVessel = newRenameFirst;
+                config.Save();
+            }
 
         if (GUI.Button(new Rect(10, 210, widthButton, heightButton), "Rename Now"))
         {
@@ -238,6 +252,7 @@ public class SmartVesselRenamer : MonoBehaviour
         if (GUI.Button(new Rect(10, 250, widthButton, heightButton), "Reset to Defaults"))
         {
             config.Reset();
+            config.Save();
         }
 
         if (GUI.Button(new Rect(10, 290, widthButton, heightButton), "Close"))
