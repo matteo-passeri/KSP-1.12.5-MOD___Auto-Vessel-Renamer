@@ -367,13 +367,22 @@ public class SmartVesselRenamer : MonoBehaviour
         logBuilder.AppendLine($"[AutoRenamer] Checking against {existingNames.Count} existing vessels:");
 
         // Loop until a unique name is found
-        while (existingNames.Any(name => string.Equals(name, candidate, StringComparison.OrdinalIgnoreCase)))
+        int attempt = 0;
+        while (true)
         {
-            logBuilder.AppendLine($" - {candidate} exists, trying next");
+            bool nameExists = existingNames.Any(name => string.Equals(name, candidate, StringComparison.OrdinalIgnoreCase));
+            
+            if (!nameExists && (attempt > 0 || !config.RenameFirstVessel))
+                break;
+
+            logBuilder.AppendLine($" - {candidate} exists or RenameFirstVessel forced, trying next");
+
             string numberStr = ConvertNumberToStyle(count, config.NumberStyle);
             candidate = $"{cleanBase}{config.SuffixFormat.Replace("{n}", numberStr)}";
             count++;
+            attempt++;
         }
+
 
         Debug.Log(logBuilder.ToString());
         return candidate;
