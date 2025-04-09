@@ -10,6 +10,7 @@ using System.Reflection;
 using System.IO;
 using System;
 using System.Text;
+using System.Text.RegularExpressions;
 
 [KSPAddon(KSPAddon.Startup.EditorAny, false)]
 public class SmartVesselRenamer : MonoBehaviour
@@ -167,7 +168,11 @@ public class SmartVesselRenamer : MonoBehaviour
         config.AutoRenameEnabled = GUI.Toggle(new Rect(10, 10, widthButton, heightButton), config.AutoRenameEnabled, "Enable Auto-Rename");
 
         GUI.Label(new Rect(10, 40, widthButton, heightButton), "Suffix Format:");
+
+        GUIContent suffixLabel = new GUIContent("Suffix Format", "Use {n} as a placeholder for the number (e.g. {n}, 0x{n:X2}, etc.)");
+        GUILayout.Label(suffixLabel);
         config.SuffixFormat = GUI.TextField(new Rect(10, 60, widthButton, heightField), config.SuffixFormat);
+
 
         if (!config.SuffixFormat.Contains("{n}"))
             GUI.Label(new Rect(10, 90, widthButton, heightField), "[!] Format must include {n}");
@@ -196,8 +201,10 @@ public class SmartVesselRenamer : MonoBehaviour
             {
                 if (GUI.Button(new Rect(10, dropdownY + (i * heightField), widthButton, heightField), styleNames[i]))
                 {
-                    config.NumberStyle = (AutoRenamerConfig.NumberingStyle)i;
+                    config.NumberStyle = (AutoRenamerConfig.NumberingStyle)Enum.Parse(typeof(AutoRenamerConfig.NumberingStyle), styleNames[i]);
+
                     showDropdown = false;
+                    config.Save();
                 }
             }
 
@@ -225,6 +232,7 @@ public class SmartVesselRenamer : MonoBehaviour
             {
                 ScreenMessages.PostScreenMessage("Name already unique", 3f, ScreenMessageStyle.UPPER_CENTER);
             }
+            config.Save();
         }
 
         if (GUI.Button(new Rect(10, 250, widthButton, heightButton), "Reset to Defaults"))
@@ -329,12 +337,24 @@ public class SmartVesselRenamer : MonoBehaviour
     // Generates a unique vessel name
     private string GetUniqueName(string baseName)
     {
-        if (string.IsNullOrWhiteSpace(baseName)) baseName = "Untitled Craft";
+        existingNames.Clear();
+
+        if (string.IsNullOrWhiteSpace(baseName))
+            baseName = "Untitled Craft";
 
         string cleanBase = baseName;
-        int suffixStart = baseName.LastIndexOf(" #");
-        if (suffixStart > 0 && int.TryParse(baseName.Substring(suffixStart + 2), out _))
-            cleanBase = baseName.Substring(0, suffixStart);
+
+        // Attempt to strip suffix if it matches the configured format
+        if (!string.IsNullOrEmpty(config.SuffixFormat))
+        {
+            string escapedFormat = Regex.Escape(config.SuffixFormat).Replace("\\{n\\}", "(\\S+)");
+            var match = Regex.Match(baseName, $"^(.*?){escapedFormat}$");
+
+            if (match.Success && match.Groups.Count > 1)
+            {
+                cleanBase = match.Groups[1].Value.TrimEnd();
+            }
+        }
 
         string candidate = cleanBase;
         int count = config.RenameFirstVessel ? 1 : 2;  // Start from 1 if enabled
