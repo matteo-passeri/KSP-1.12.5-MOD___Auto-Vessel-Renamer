@@ -174,9 +174,9 @@ public class SmartVesselRenamer : MonoBehaviour
 
         GUI.Label(new Rect(10, 40, widthButton, heightButton), "Suffix Format:");
 
-        GUIContent suffixLabel = new GUIContent("Suffix Format", "Use {n} as a placeholder for the number (e.g. {n}, 0x{n:X2}, etc.)");
-        GUILayout.Label(suffixLabel);
-        config.SuffixFormat = GUI.TextField(new Rect(10, 60, widthButton, heightField), config.SuffixFormat);
+        /* GUIContent suffixLabel = new GUIContent("Suffix Format", "Use {n} as a placeholder for the number (e.g. {n}, 0x{n:X2}, etc.)");
+        GUILayout.Label(new Rect(10, 40, widthButton, heightButton), suffixLabel); */
+        
         string suffixFormat = GUI.TextField(new Rect(10, 60, widthButton, heightField), config.SuffixFormat);
         if (suffixFormat != config.SuffixFormat)
         {
@@ -383,7 +383,8 @@ public class SmartVesselRenamer : MonoBehaviour
             VesselType.Unknown
         };
 
-        if (!existingNames.Any()) {
+        if (!existingNames.Any())
+        {
             // Collect current vessel names to compare
             if (FlightGlobals.Vessels != null)
                 existingNames.AddRange(
@@ -395,18 +396,19 @@ public class SmartVesselRenamer : MonoBehaviour
                     HighLogic.CurrentGame.flightState.protoVessels
                     .Where(p => p != null && !excludedTypes.Contains(p.vesselType) && !string.IsNullOrEmpty(p.vesselName))
                     .Select(p => p.vesselName.Trim()));
-        }        
+        }
 
-        // Build log for debug output
+        // Limit the size of the log
         StringBuilder logBuilder = new StringBuilder();
         logBuilder.AppendLine($"[AutoRenamer] Checking against {existingNames.Count} existing vessels:");
 
-        // Loop until a unique name is found
+        // Loop until a unique name is found with a max attempt limit to prevent infinite loops
         int attempt = 0;
-        while (true)
+        const int maxAttempts = 100; // Limit the number of attempts
+        while (attempt < maxAttempts)
         {
-            bool nameExists = existingNames.Any(name => string.Equals(name, candidate, StringComparison.OrdinalIgnoreCase));
-            
+            bool nameExists = existingNames.Contains(candidate, StringComparer.OrdinalIgnoreCase);
+
             if (!nameExists && (attempt > 0 || !config.RenameFirstVessel))
                 break;
 
@@ -418,10 +420,18 @@ public class SmartVesselRenamer : MonoBehaviour
             attempt++;
         }
 
+        // If max attempts reached, log error and return a default name
+        if (attempt >= maxAttempts)
+        {
+            logBuilder.AppendLine($"[AutoRenamer] Failed to find a unique name after {maxAttempts} attempts.");
+            Debug.LogError(logBuilder.ToString());
+            return $"{cleanBase} [ERROR]";
+        }
 
         Debug.Log(logBuilder.ToString());
         return candidate;
     }
+
 
     private string ConvertNumberToStyle(int number, AutoRenamerConfig.NumberingStyle style)
     {
