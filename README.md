@@ -1,4 +1,4 @@
-# [KSP 1.12.5 MOD] Auto Vessel Renamer
+# [KSP 1.12.5 MOD] Smart Vessel Renamer
 
 Mod for Ksp 1.12.5 that Automatically rename your vessel at launch, if the name is already in use in your active vessels:
 
@@ -15,6 +15,6 @@ Mod for Ksp 1.12.5 that Automatically rename your vessel at launch, if the name 
 ![image](/Screenshot/Scr3.png?raw=true)
 
 ---
-forum.kerbalspaceprogram.com: https://forum.kerbalspaceprogram.com/topic/227614-1125-auto-vessel-renamer-100-no-more-vessels-with-the-same-name-08-april-2025/
-spacedock.info: https://spacedock.info/mod/3857/Auto%20Vessel%20Renamer
+forum.kerbalspaceprogram.com: https://forum.kerbalspaceprogram.com/topic/227614-1125-smart-vessel-renamer-100-no-more-vessels-with-the-same-name-08-april-2025/
+spacedock.info: https://spacedock.info/mod/3857/Smart%20Vessel%20Renamer
 ---

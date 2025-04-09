@@ -4,8 +4,8 @@
     <TargetFramework>net471</TargetFramework>
     <ImplicitUsings>disable</ImplicitUsings>
     <OutputType>Library</OutputType>
-    <AssemblyName>AutoVesselRenamer</AssemblyName>
-    <RootNamespace>AutoVesselRenamer</RootNamespace>
+    <AssemblyName>SmartVesselRenamer</AssemblyName>
+    <RootNamespace>SmartVesselRenamer</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -40,6 +40,6 @@
     </Content>
 
     <!-- Embedded resource -->
-    <EmbeddedResource Include="GameData\AutoVesselRenamer\Textures\AutoVesselRenamer.png" />
+    <EmbeddedResource Include="GameData\SmartVesselRenamer\Textures\SmartVesselRenamer.png" />
     </ItemGroup>
 </Project>
