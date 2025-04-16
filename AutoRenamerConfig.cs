@@ -2,6 +2,9 @@ using System.Xml.Serialization;
 using System.IO;
 using System.Collections.Generic;
 using KSP.IO;
+using System.Linq;
+using System.Diagnostics;
+using UnityEngine;
 
 
 public class AutoRenamerConfig
@@ -57,9 +60,9 @@ public class AutoRenamerConfig
         /// The numbering style to use for vessel names.
         /// For example, NumberingStyle.ArabicNumbers will result in vessel names like "MyVessel 1", "MyVessel 2", etc.
         NumberStyle = (NumberingStyle)config.GetValue(nameof(NumberStyle), (int)NumberingStyle.ArabicNumbers);
-        /// The custom & template presets for vessel names.
+        /* /// The custom & template presets for vessel names.
         /// These presets are saved to disk and loaded when the game is started.
-        NamePresets = PresetConfigSerializer.LoadPresetConfig(presetsPath);
+        NamePresets = PresetConfigSerializer.LoadPresetConfig();
         // Print in log NamePresets
         UnityEngine.Debug.Log($"NamePresets: CustomPresets={NamePresets.CustomPresets.Count}, TemplatePresets={NamePresets.TemplatePresets.Count}");
 
@@ -68,7 +71,7 @@ public class AutoRenamerConfig
             NamePresets.CustomPresets = new List<Preset>();
 
         if (NamePresets.TemplatePresets == null)
-            NamePresets.TemplatePresets = new List<Preset>();
+            NamePresets.TemplatePresets = new List<Preset>(); */
     }
 
     /// Saves the config to disk.
@@ -87,7 +90,7 @@ public class AutoRenamerConfig
         // Save the presets to an XML file
         /// The presets are saved to a file named "presets.xml"
         /// in the same directory as the configuration file.
-        PresetConfigSerializer.SavePresetConfig(NamePresets, presetsPath);
+        PresetConfigSerializer.SavePresetConfig(NamePresets);
 
         // Save the config to disk
         config.save();
@@ -128,23 +131,66 @@ public class AutoRenamerConfig
 
     public class PresetConfigSerializer
     {
-        public static void SavePresetConfig(PresetConfig config, string filePath)
+        /// Saves a PresetConfig to an XML file.
+        /// 
+        /// This method takes a PresetConfig object and saves it to an XML file
+        /// at the provided file path.
+        /// 
+        /// <param name="config">The PresetConfig to save.</param>
+        /// <param name="filePath">The path to the XML file where the PresetConfig should be saved.</param>
+        public static void SavePresetConfig(PresetConfig config)
         {
             XmlSerializer serializer = new XmlSerializer(typeof(PresetConfig));
-            using (StreamWriter writer = new StreamWriter(filePath))
+            using (StreamWriter writer = new StreamWriter(presetsPath))
             {
                 serializer.Serialize(writer, config);
             }
         }
 
-        public static PresetConfig LoadPresetConfig(string filePath)
+        /// Loads a PresetConfig from an XML file.
+        /// 
+        /// This method takes the path to an XML file and loads the PresetConfig
+        /// from it. If the file does not exist or the XML is invalid, an
+        /// exception is thrown.
+        /// 
+        /// <param name="filePath">The path to the XML file to load.</param>
+        /// <returns>The loaded PresetConfig.</returns>
+        public static PresetConfig LoadPresetConfig()
         {
             XmlSerializer serializer = new XmlSerializer(typeof(PresetConfig));
-            using (StreamReader reader = new StreamReader(filePath))
+            using (StreamReader reader = new StreamReader(presetsPath))
             {
                 return (PresetConfig)serializer.Deserialize(reader);
             }
         }
+
+        /// Removes a custom preset from the preset list.
+        ///
+        /// This method takes a preset name and file path as arguments.
+        /// It loads the preset config from the file path, removes the
+        /// preset with the given name from the list of custom presets,
+        /// and saves the updated preset config back to the file path.
+        ///
+        /// <param name="presetName">The name of the preset to remove.</param>
+        /// <param name="filePath">The path to the XML file containing the preset config.</param>
+        public static void RemovePresetConfig(string presetName)
+        {
+            // Load the preset config from the file path
+            var presets = LoadPresetConfig();
+
+            // Find the preset to remove
+            var presetToRemove = presets.CustomPresets.FirstOrDefault(p => p.DisplayName == presetName);
+            UnityEngine.Debug.Log($"[AutoRenamer] Removing preset: {presetName}");
+
+            // If the preset exists, remove it from the list of custom presets
+            if (presetToRemove != null)
+            {
+                presets.CustomPresets.Remove(presetToRemove);
+                // Save the updated preset config back to the file path
+                SavePresetConfig(presets); // Save the updated presets();
+            }
+        }
+
     }
 }
 

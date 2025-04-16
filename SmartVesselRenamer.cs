@@ -649,7 +649,7 @@ public class SmartVesselRenamer : MonoBehaviour
                 numberingScrollPos,
                 new Rect(0, 0, dropdownWidth - 20, totalHeight)
             );
-            
+
             GUI.backgroundColor = Color.grey;
             
             int i = 0;
@@ -907,7 +907,15 @@ public class SmartVesselRenamer : MonoBehaviour
         // Buttons to confirm or cancel the delete
         if (GUILayout.Button("Confirm", GUILayout.Width(100), GUILayout.Height(30)))
         {
+            // Retrieve DisplayName from Index
+            string presetName = customPresets[removePresetIndex].DisplayName;
+            Debug.Log($"[SmartVesselRenamer] Removing preset: {presetName}");
+            // Remove the preset from the file
+            PresetConfigSerializer.RemovePresetConfig(presetName);
+            // Remove the preset from the cached list
             customPresets.RemoveAt(removePresetIndex);
+            // Reload presets
+            LoadPresetsFromConfig();
             showConfirmDelete = false;
         }
 
@@ -1002,14 +1010,22 @@ public class SmartVesselRenamer : MonoBehaviour
     #region Preset System
     /// Loads the name presets from the configuration.
     /// This method retrieves the list of name presets stored in the configuration
-    /// and populates the `customPresets` list with them.
-    /// The presets are stored under the key "NamePresets" and are loaded
-    /// during the initialization phase.
     private void LoadPresetsFromConfig()
     {
-        customPresets = config.NamePresets.CustomPresets;
+        var presets = PresetConfigSerializer.LoadPresetConfig();
+        if (presets != null) 
+        {
+            Debug.Log($"[SmartVesselRenamer] Loaded {presets.CustomPresets.Count} custom presets and {presets.TemplatePresets.Count} template presets.");
+        }
+        // Ensure lists are not null
+        if (presets.CustomPresets == null)
+            presets.CustomPresets = new List<Preset>();
 
-        templatePresets = config.NamePresets.TemplatePresets;
+        if (presets.TemplatePresets == null)
+            presets.TemplatePresets = new List<Preset>();
+
+        customPresets = presets.CustomPresets;
+        templatePresets = presets.TemplatePresets;
 
         // Join custom and template presets
         allPresets = customPresets.Concat(templatePresets).ToList();
