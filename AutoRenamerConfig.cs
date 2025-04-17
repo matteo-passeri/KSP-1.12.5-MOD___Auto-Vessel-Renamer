@@ -36,7 +36,9 @@ public class AutoRenamerConfig
     private PluginConfiguration config;
     public bool AutoRenameEnabled = true;
     public bool RenameFirstVessel = false;
+    public bool SuffixRenameEnabled = true;
     public string SuffixFormat = " {n}";
+    public string LastSuffixUsed = "";
     public NumberingStyle NumberStyle = NumberingStyle.ArabicNumbers;
     public PresetConfig NamePresets;
 
@@ -54,24 +56,20 @@ public class AutoRenamerConfig
         /// The format of the suffix to use for vessel names.
         /// For example, " {n}" will result in vessel names like "MyVessel 1", "MyVessel 2", etc.
         SuffixFormat = config.GetValue(nameof(SuffixFormat), " {n}");
+
         /// If true, the first vessel will also be renamed.
         /// Otherwise, the first vessel will keep its original name.
         RenameFirstVessel = config.GetValue(nameof(RenameFirstVessel), false);
+
+        /// If true, the suffix will be replaced to the vessel name.
+        SuffixRenameEnabled = config.GetValue(nameof(SuffixRenameEnabled), true);
+
+        /// The last suffix used for vessel names.
+        LastSuffixUsed = config.GetValue(nameof(LastSuffixUsed), "");
+
         /// The numbering style to use for vessel names.
         /// For example, NumberingStyle.ArabicNumbers will result in vessel names like "MyVessel 1", "MyVessel 2", etc.
         NumberStyle = (NumberingStyle)config.GetValue(nameof(NumberStyle), (int)NumberingStyle.ArabicNumbers);
-        /* /// The custom & template presets for vessel names.
-        /// These presets are saved to disk and loaded when the game is started.
-        NamePresets = PresetConfigSerializer.LoadPresetConfig();
-        // Print in log NamePresets
-        UnityEngine.Debug.Log($"NamePresets: CustomPresets={NamePresets.CustomPresets.Count}, TemplatePresets={NamePresets.TemplatePresets.Count}");
-
-        // Ensure lists are not null
-        if (NamePresets.CustomPresets == null)
-            NamePresets.CustomPresets = new List<Preset>();
-
-        if (NamePresets.TemplatePresets == null)
-            NamePresets.TemplatePresets = new List<Preset>(); */
     }
 
     /// Saves the config to disk.
@@ -86,11 +84,15 @@ public class AutoRenamerConfig
         config.SetValue(nameof(SuffixFormat), SuffixFormat);
         config.SetValue(nameof(RenameFirstVessel), RenameFirstVessel);
         config.SetValue(nameof(NumberStyle), (int)NumberStyle);
+        config.SetValue(nameof(SuffixRenameEnabled), SuffixRenameEnabled);
+        config.SetValue(nameof(LastSuffixUsed), LastSuffixUsed);
 
         // Save the presets to an XML file
         /// The presets are saved to a file named "presets.xml"
         /// in the same directory as the configuration file.
-        PresetConfigSerializer.SavePresetConfig(NamePresets);
+        if (NamePresets != null) {
+            PresetConfigSerializer.SavePresetConfig(NamePresets);
+        }
 
         // Save the config to disk
         config.save();
@@ -104,6 +106,9 @@ public class AutoRenamerConfig
     {
         // Enable auto-rename by default
         AutoRenameEnabled = true;    
+
+        // Enable suffix renaming by default
+        SuffixRenameEnabled = true;
 
         // Do not rename the first vessel by default
         RenameFirstVessel = false;    
@@ -180,7 +185,6 @@ public class AutoRenamerConfig
 
             // Find the preset to remove
             var presetToRemove = presets.CustomPresets.FirstOrDefault(p => p.DisplayName == presetName);
-            UnityEngine.Debug.Log($"[AutoRenamer] Removing preset: {presetName}");
 
             // If the preset exists, remove it from the list of custom presets
             if (presetToRemove != null)

@@ -1,4 +1,4 @@
-# [KSP 1.12.5 MOD] Smart Vessel Renamer 1.2.1
+# [KSP 1.12.5 MOD] Smart Vessel Renamer 1.2.2
 Fully customizable and automatic smart vessel renamer
 Version 1.2.0 is out!
 
@@ -7,6 +7,8 @@ Mod for Ksp 1.12.5 that automatically rename your vessel at launch, with few op
 ![image](/Screenshot/Scr4.png?raw=true)
 
 - Checkbox to toggle on/off the auto renamer
+
+- Checkbox to toggle on/off the suffix replacement
 
 - Check while typing if the suffix has the right format
 

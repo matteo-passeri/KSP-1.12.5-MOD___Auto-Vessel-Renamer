@@ -15,7 +15,7 @@ public class SmartVesselRenamer : MonoBehaviour
     // Core Fields
     private bool launchHooked = false; // Tracks whether the launch button has been hooked already
     private ApplicationLauncherButton appButton; // Toolbar button for toggling GUI
-    private Rect mainWindowRect = new Rect(300, 100, 260, 410); // Main window position and size
+    private Rect mainWindowRect = new Rect(300, 100, 260, 430); // Main window position and size
     private Rect presetEditormainWindowRect = new Rect(590, 100, 260, 410); // Preset editor window
     private Rect confirmRenameWindowRect = new Rect(600, 100, 260, 120); // Confirmation dialog window
     private Rect confirmDeleteWindowRect = new Rect(600, 590, 260, 120); // Confirmation dialog window
@@ -385,9 +385,18 @@ public class SmartVesselRenamer : MonoBehaviour
     /// <returns>A unique vessel name.</returns>
     private string GenerateUniqueName(string cleanBase)
     {
-        // Replace template variables in the base name
-        cleanBase = cleanBase.Replace("{pc}", partCount.ToString()) // Replace part count
-                             .Replace("{date}", DateTime.Now.ToString("yyyyMMdd")); // Replace current date
+        // Get the current part count
+        UpdatePartCount();
+
+        // Check if suffix renaming is enabled
+        if (config.SuffixRenameEnabled) {
+            if (config.LastSuffixUsed != null && config.LastSuffixUsed != "") {
+                // Replace template variables in the base name
+                cleanBase = cleanBase.Replace(config.LastSuffixUsed, ""); // Replace last used suffix
+            } else {
+                Debug.Log($"{logName} LastSuffixUsed is null or empty");
+            }                                
+        }
 
         // Load the existing vessel names
         LoadExistingNames();
@@ -404,7 +413,15 @@ public class SmartVesselRenamer : MonoBehaviour
 
             // Generate the suffix using the configured numbering style
             string numberStr = ConvertNumberToStyle(count, config.NumberStyle);
-            candidate = $"{cleanBase}{config.SuffixFormat.Replace("{n}", numberStr)}"; // Append suffix to base
+            string suffixProcessed = config.SuffixFormat.Replace("{n}", numberStr); // Replace suffix number in format
+            candidate = $"{cleanBase}{suffixProcessed}"; // Append suffix to base
+            if (config.SuffixRenameEnabled)
+            {
+                // Save the last used suffix
+                config.LastSuffixUsed = suffixProcessed;
+                // check if sufficProcessed is not already present at the end of cleanBase
+                if (cleanBase.EndsWith(suffixProcessed)) candidate = cleanBase;
+            }
             count++; // Increment counter for the next attempt
         }
 
@@ -589,6 +606,15 @@ public class SmartVesselRenamer : MonoBehaviour
         if (autoRenameToggle != config.AutoRenameEnabled)
         {
             config.AutoRenameEnabled = autoRenameToggle;
+            config.Save();
+            UpdateNamePreview();
+        }
+
+        // Suffix Rename Toggle   
+        bool suffixRenameEnabled = GUILayout.Toggle(config.SuffixRenameEnabled, "Enable Suffix sostitution");
+        if (suffixRenameEnabled != config.SuffixRenameEnabled)
+        {
+            config.SuffixRenameEnabled = suffixRenameEnabled;
             config.Save();
             UpdateNamePreview();
         }
@@ -909,7 +935,6 @@ public class SmartVesselRenamer : MonoBehaviour
         {
             // Retrieve DisplayName from Index
             string presetName = customPresets[removePresetIndex].DisplayName;
-            Debug.Log($"[SmartVesselRenamer] Removing preset: {presetName}");
             // Remove the preset from the file
             PresetConfigSerializer.RemovePresetConfig(presetName);
             // Remove the preset from the cached list
@@ -1015,8 +1040,9 @@ public class SmartVesselRenamer : MonoBehaviour
         var presets = PresetConfigSerializer.LoadPresetConfig();
         if (presets != null) 
         {
-            Debug.Log($"[SmartVesselRenamer] Loaded {presets.CustomPresets.Count} custom presets and {presets.TemplatePresets.Count} template presets.");
-        }
+            Debug.Log($"[SmartVesselRenamer] Loaded {presets?.CustomPresets?.Count} custom presets and {presets?.TemplatePresets?.Count} template presets.");
+        }        
+
         // Ensure lists are not null
         if (presets.CustomPresets == null)
             presets.CustomPresets = new List<Preset>();
@@ -1036,18 +1062,23 @@ public class SmartVesselRenamer : MonoBehaviour
     /// Updates the name preview by generating a unique name based on the current name of the vessel.
     private void UpdateNamePreview()
     {
-        if (editorLogicCache?.ship != null)
+        string shipName;
+        if (editorLogicCache?.ship == null)
         {
-            // Generate a unique name for the vessel
-            cachedPreview = GetUniqueName(editorLogicCache.ship.shipName);
-
-            // Store the current time so we can check if the delay period has passed
-            lastPreviewUpdateTime = Time.realtimeSinceStartup;
-
-            CacheReferences();
-
-            RepaintGUI();
+            shipName = "Untitled Craft";
+        } else {
+            shipName = editorLogicCache.ship.shipName;
         }
+        
+        // Generate a unique name for the vessel
+        cachedPreview = GetUniqueName(shipName);
+
+        // Store the current time so we can check if the delay period has passed
+        lastPreviewUpdateTime = Time.realtimeSinceStartup;
+
+        CacheReferences();
+
+        RepaintGUI();
     }
     #endregion
 
